@@ -8,7 +8,7 @@
 #include "custom.h"
 
 void custom_hook(s32 eventId, enum HookId hookId) {
-	if (hookId == HOOK_THREAD5 && eventId == LEVEL_SCRIPT_EXECUTE) {
-	    print_text(25, 60, "HI");
-	}
+    if (hookId == HOOK_THREAD5 && eventId == LEVEL_SCRIPT_EXECUTE) {
+        print_text(25, 60, "HI");
+    }
 }
