@@ -37,6 +37,8 @@
 
 #define SEG_FRAMEBUFFERS  (RDRAM_END - SEG_FRAMEBUFFERS_SIZE)
 
+#define SEG_CUSTOM        RDRAM_END
+
 #else /* Use Expansion Pak space for pool. */
 
 /*

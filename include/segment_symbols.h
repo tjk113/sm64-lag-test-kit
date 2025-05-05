@@ -40,8 +40,12 @@ DECLARE_SEGMENT(engine)
 DECLARE_SEGMENT(behavior)
 DECLARE_SEGMENT(scripts)
 DECLARE_SEGMENT(goddard)
+DECLARE_SEGMENT(custom)
 
 extern u8 _goddardSegmentStart[];
+extern u8 _customSegmentStart[];
+extern u8 _customSegmentNoloadStart[];
+extern u8 _customSegmentNoloadEnd[];
 
 #ifdef USE_EXT_RAM
 extern u8 _engineSegmentStart[];

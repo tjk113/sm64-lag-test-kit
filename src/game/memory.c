@@ -13,6 +13,8 @@
 #include "segments.h"
 #include "segment_symbols.h"
 
+#include "custom/init.h"
+
 // round up to the next multiple
 #define ALIGN4(val) (((val) + 0x3) & ~0x3)
 #define ALIGN8(val) (((val) + 0x7) & ~0x7)
@@ -248,7 +250,7 @@ u32 main_pool_pop_state(void) {
  * Perform a DMA read from ROM. The transfer is split into 4KB blocks, and this
  * function blocks until completion.
  */
-static void dma_read(u8 *dest, u8 *srcStart, u8 *srcEnd) {
+void dma_read(u8 *dest, u8 *srcStart, u8 *srcEnd) {
     u32 size = ALIGN16(srcEnd - srcStart);
 
     osInvalDCache(dest, size);
@@ -366,16 +368,18 @@ void *load_segment_decompress_heap(u32 segment, u8 *srcStart, u8 *srcEnd) {
     return gDecompressionHeap;
 }
 
-void load_engine_code_segment(void) {
-    void *startAddr = (void *) SEG_ENGINE;
-    u32 totalSize = SEG_FRAMEBUFFERS - SEG_ENGINE;
-    UNUSED u32 alignedSize = ALIGN16(_engineSegmentRomEnd - _engineSegmentRomStart);
+// Same size as original load_engine_code_segment on IDO -g
+void load_custom_code_segment(void) {
+    void *startAddr = _customSegmentStart;
+    u32 totalSize = _customSegmentRomStart - _customSegmentRomEnd;
 
-    bzero(startAddr, totalSize);
+    bzero(startAddr, _customSegmentNoloadEnd - _customSegmentStart);
     osWritebackDCacheAll();
-    dma_read(startAddr, _engineSegmentRomStart, _engineSegmentRomEnd);
+    dma_read(startAddr, _customSegmentRomStart, _customSegmentRomEnd);
     osInvalICache(startAddr, totalSize);
     osInvalDCache(startAddr, totalSize);
+
+    custom_init();
 }
 #endif
 

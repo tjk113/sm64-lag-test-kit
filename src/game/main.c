@@ -332,7 +332,7 @@ void handle_dp_complete(void) {
 void thread3_main(UNUSED void *arg) {
     setup_mesg_queues();
     alloc_pool();
-    load_engine_code_segment();
+    load_custom_code_segment();
 
     create_thread(&gSoundThread, 4, thread4_sound, NULL, gThread4Stack + 0x2000, 20);
     osStartThread(&gSoundThread);

@@ -42,6 +42,11 @@ enum ProfilerGfxEvent {
     RDP_COMPLETE
 };
 
+extern s16 gCurrentFrameIndex1;
+extern s16 gCurrentFrameIndex2;
+
+extern struct ProfilerFrameData gProfilerFrameData[2];
+
 void profiler_log_thread5_time(enum ProfilerGameEvent eventID);
 void profiler_log_thread4_time(void);
 void profiler_log_gfx_time(enum ProfilerGfxEvent eventID);
