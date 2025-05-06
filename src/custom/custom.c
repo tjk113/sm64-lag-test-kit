@@ -24,7 +24,7 @@ struct RecordingFrame {
 
 struct MemBlock {
     void *addr;
-    u16 size;
+    u32 size;
 };
 
 struct RecordingHeader {
