@@ -15,6 +15,6 @@ struct Hook {
     void *func;
 };
 
-extern void custom_hook(int eventId, enum HookId hookId);
+extern void custom_hook(enum ProfilerGameEvent eventId, enum HookId hookId);
 
 #endif
