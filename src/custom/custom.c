@@ -95,6 +95,8 @@ void entry() {
 
 void custom_entry(void *func, s32 eventId) {
     if (func == profiler_log_thread5_time) {
-        entry();
+        if (eventId == INPUT_POLL) {
+            entry();
+        }
     }
 }
