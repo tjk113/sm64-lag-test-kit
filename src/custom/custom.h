@@ -16,5 +16,6 @@ struct Hook {
 };
 
 extern void custom_hook(enum ProfilerGameEvent eventId, enum HookId hookId);
+extern void custom_entry(void *func, s32 eventId);
 
 #endif

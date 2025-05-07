@@ -93,15 +93,8 @@ void entry() {
     gMarioStates->numLives = frame;
 }
 
-u32 check = 0;
-
-void custom_hook(enum ProfilerGameEvent eventId, enum HookId hookId) {
-    if (hookId == HOOK_THREAD5 && eventId == INPUT_POLL) {
-        if (check++ == 1) {
-            entry();
-        }
-        if (check == 6) {
-            check = 0;
-        }
+void custom_entry(void *func, s32 eventId) {
+    if (func == profiler_log_thread5_time) {
+        entry();
     }
 }
