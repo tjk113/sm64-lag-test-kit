@@ -15,10 +15,10 @@
 #define ALIGN16(val) (((val) + 0xF) & ~0xF)
 
 static struct Hook sHookTargets[] = {
-    { HOOK_THREAD5, profiler_log_thread5_time },
-    { HOOK_THREAD4, profiler_log_thread4_time },
-    { HOOK_GFX, profiler_log_gfx_time },
-    { HOOK_VBLANK, profiler_log_vblank_time },
+    { profiler_log_thread5_time, { 0 } },
+    { profiler_log_thread4_time, { 0 } },
+    { profiler_log_gfx_time, { 0 } },
+    { profiler_log_vblank_time, { 0 } },
 };
 
 static void load_engine_code_segment(void) {
@@ -35,20 +35,26 @@ static void load_engine_code_segment(void) {
 
 void custom_init(void) {
     u32 i;
-    u32 hook = 0x08000000 | (((u32) custom_hook & 0xffffff) >> 2); // j custom_hook
 
     load_engine_code_segment();
 
     for (i = 0; i < sizeof(sHookTargets) / sizeof(sHookTargets[0]); i++) {
-        u32 *cur = (u32 *) sHookTargets[i].func;
+        struct Hook *hook = &sHookTargets[i];
+        u32 *cur = (u32 *) hook->func;
 
         // jr ra
         while (*cur != 0x03e00008) {
             cur++;
         }
 
-        cur[0] = hook;
-        cur[1] = 0x24050000 | sHookTargets[i].id; // li a1, id
-        osInvalICache(cur, 8);
+        cur[1] = cur[-1]; // move stack addiu to delay slot
+        cur[-1] = 0x8fa50018; // lw a1, 24(sp) (before frame is pushed out)
+        cur[0] = 0x08000000 | (((u32) hook->wrapper & 0xffffff) >> 2); // j hook->wrapper
+        osInvalICache(&cur[-1], 12);
+
+        hook->wrapper[0] = 0x3c040000 | ((u32) hook->func >> 16); // lui a0, uhi hook->func
+        hook->wrapper[1] = 0x08000000 | (((u32) custom_entry & 0xffffff) >> 2); // j custom_entry
+        hook->wrapper[2] = 0x34840000 | ((u32) hook->func & 0xffff); // ori a0, a0, ulo hook->func
+        osInvalICache(hook->wrapper, 12);
     }
 }

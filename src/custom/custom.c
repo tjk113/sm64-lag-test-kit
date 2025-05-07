@@ -7,8 +7,8 @@
 
 #include "custom.h"
 
-void custom_hook(s32 eventId, enum HookId hookId) {
-    if (hookId == HOOK_THREAD5 && eventId == LEVEL_SCRIPT_EXECUTE) {
-        print_text(25, 60, "HI");
+void custom_entry(void *func, s32 eventId) {
+    if (func == profiler_log_thread5_time) {
+        print_text_fmt_int(25 + eventId * 15, 60, "%d", eventId);
     }
 }
