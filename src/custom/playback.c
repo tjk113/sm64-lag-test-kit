@@ -5,6 +5,7 @@
 #include <game/level_update.h>
 
 #include "custom.h"
+#include "lag.h"
 #include "playback.h"
 
 
@@ -14,12 +15,12 @@ u8 *data_ptr = data;
 u32 recordingCount = 0;
 u8 data[0x10000] = { 0 };
 
-
 struct RecordingHeader curRec;
 u16 buttonsDownLastFrame = 0;
 u16 recordingIndex = 0;
 u16 frame = 0;
 u8 camControl = 0;
+
 
 void load_state() {
     u8 *curData = curRec.state_data;
@@ -41,7 +42,7 @@ void write_inputs() {
     }
 
     gControllerPads[0].button = button;
-    gControllerPads[0].stick_x = curInputs.stick_x;
+    gControllerPads[0].stick_x = curInputs.stick_x; 
     gControllerPads[0].stick_y = curInputs.stick_y;
 
     if (gCurrentArea != NULL) {
@@ -54,6 +55,7 @@ void write_inputs() {
 
 void restart_playback() {
     frame = 0;
+    lagCounter = 0;
     load_state();
     write_inputs();
 }
@@ -81,6 +83,9 @@ u8 do_control() {
         }
         restartPlayback = 1;
     }
+    if (buttonsPressed & CONT_START) {
+        restartPlayback = 1;
+    }
 
     return restartPlayback;
 }
@@ -91,7 +96,7 @@ void update_recording() {
     if (gGlobalTimer < START_TIMER) {
         return;
     } else if (gGlobalTimer == START_TIMER) {
-        curRec = *((struct RecordingHeader *) data);
+        curRec = *((struct RecordingHeader*)data);
         restart_playback();
     } else {
         if (do_control()) {
@@ -100,5 +105,5 @@ void update_recording() {
             advance_playback();
         }
     }
-    gMarioStates->numLives = frame;
+    gMarioStates->numLives = lagCounter % 100;
 }
