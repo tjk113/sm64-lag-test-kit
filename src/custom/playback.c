@@ -110,9 +110,9 @@ struct MainPoolState {
 
 
 extern struct MainPoolState *gMainPoolState;
+extern uintptr_t sSegmentTable[32];
 
 void update_recording() {
-    u8 i;
     LevelScript **p = 0x80206DEC;
     LevelScript *sCurrentCmd = 0x8038BE28;
     u32 *sStackTop = 0x8038b8b0;
@@ -126,7 +126,6 @@ void update_recording() {
     s32 *sPoolFreeSpace = 0x8033b480;
     s16 *sCurrAreaIndex = 0x8038b8ac;
     u32 *gObjParentGraphNode = 0x08038bd88;
-    u32 addr;
 
     if (do_control()) {
         curRec = *((struct RecordingHeader*)data);
@@ -134,16 +133,17 @@ void update_recording() {
         clear_objects();
         clear_area_graph_nodes();
         clear_areas();
-        while ((*gMainPoolState) != NULL) {
+        while ((*gMainPoolState) != NULL) { // restore pool to initial state for level_script_entry
             *sPoolFreeSpace = (*gMainPoolState)->freeSpace;
             main_pool_pop_state();
         }
-        gHudDisplay.flags = 0;
-        *sStackTop = 0x8038BDA0;
+        gHudDisplay.flags = 0; // intro crashes without this
+        *sStackTop = 0x8038BDA0; // reset stack ptrs to base for level_script_entry
         *sStackBase = 0x8038BDA0;
+        init_graph_node_start(NULL, (struct GraphNodeStart *) &gObjParentGraphNode);
+        *sCurrentCmd = (u32)segmented_to_virtual(level_script_entry) + 4; // skip init_level since it re-allocates the segment
         //curCmd[0] = EXIT();
         //level_cmd_exit();
-        *sCurrentCmd = segmented_to_virtual(0x80064F60 - 0x1C);
         /*sRegister = 16;
         addr = (u32)load_segment(0x15, _scriptsSegmentRomStart, _scriptsSegmentRomEnd, MEMORY_POOL_LEFT) & 0x1FFFFFFF;
         a = addr;
