@@ -130,18 +130,18 @@ void update_recording() {
     if (do_control()) {
         curRec = *((struct RecordingHeader*)data);
         //restart_playback();
+        init_graph_node_start(NULL, (struct GraphNodeStart *) &gObjParentGraphNode);
         clear_objects();
         clear_area_graph_nodes();
         clear_areas();
-        while ((*gMainPoolState) != NULL) { // restore pool to initial state for level_script_entry
+        while ((*gMainPoolState)->prev != NULL) { // restore pool to initial state for level_script_entry
             *sPoolFreeSpace = (*gMainPoolState)->freeSpace;
             main_pool_pop_state();
         }
         gHudDisplay.flags = 0; // intro crashes without this
         *sStackTop = 0x8038BDA0; // reset stack ptrs to base for level_script_entry
         *sStackBase = 0x8038BDA0;
-        init_graph_node_start(NULL, (struct GraphNodeStart *) &gObjParentGraphNode);
-        *sCurrentCmd = (u32)segmented_to_virtual(level_script_entry) + 4; // skip init_level since it re-allocates the segment
+        *sCurrentCmd = (u32)segmented_to_virtual(level_script_entry) + 4; // skip init_level due to wiggler/chain chomp pool allocation
         //curCmd[0] = EXIT();
         //level_cmd_exit();
         /*sRegister = 16;
