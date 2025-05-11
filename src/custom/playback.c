@@ -99,7 +99,6 @@ u8 do_control() {
     return restartPlayback;
 }
 
-#define START_TIMER 500
 
 struct MainPoolState {
     u32 freeSpace;
@@ -108,13 +107,14 @@ struct MainPoolState {
     struct MainPoolState *prev;
 };
 
-
 extern u32 sSegmentTable[32];
 extern u32 sPoolFreeSpace;
 extern s16 sTransitionTimer;
 extern u8 sTransitionColorFadeCount[4];
 
-LevelScript localCmds[4];
+LevelScript localCmds[4]; // temp buffer for running custom level script commands
+
+// ptrs to static vars
 s32 *sRegister = 0x8038be24;
 u16 *sDelayFrames = 0x8038B8A4;
 u16 *sDelayFrames2 = 0x8038B8A8;
@@ -131,8 +131,6 @@ struct AllocOnlyPool **sLevelPool = 0x8038b8a0;
 struct MainPoolState **gMainPoolState = 0x8032dd70;
 
 void update_recording() {
-    u8 i;
-
     if (do_control()) {
         // init_level
         init_graph_node_start(NULL, (struct GraphNodeStart *) &gObjParentGraphNode);
@@ -161,6 +159,7 @@ void update_recording() {
         *sDelayFrames = 0;
         *sDelayFrames2 = 0;
 
+        // fix entry transition
         sTransitionColorFadeCount[0] = 0;
         sTransitionColorFadeCount[1] = 0;
         sTransitionColorFadeCount[2] = 0;
