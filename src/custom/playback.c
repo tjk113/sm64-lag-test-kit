@@ -114,9 +114,6 @@ extern u32 sPoolFreeSpace;
 extern s16 sTransitionTimer;
 extern u8 sTransitionColorFadeCount[4];
 
-
-#define CMD_GET(type, offset) (*(type *) (CMD_PROCESS_OFFSET(offset) + (u8 *)(*sCurrentCmd)))
-#define NEXT_CMD ((struct LevelCommand *) (((*sCurrentCmd)->size << CMD_SIZE_SHIFT) + (u8 *)(*sCurrentCmd)))
 LevelScript localCmds[4];
 s32 *sRegister = 0x8038be24;
 u16 *sDelayFrames = 0x8038B8A4;
@@ -137,9 +134,6 @@ void update_recording() {
     u8 i;
 
     if (do_control()) {
-        curRec = *((struct RecordingHeader*)data);
-        //restart_playback();
-
         // init_level
         init_graph_node_start(NULL, (struct GraphNodeStart *) &gObjParentGraphNode);
         clear_objects();
@@ -163,7 +157,7 @@ void update_recording() {
         level_cmd_load_and_execute();
         *sStack = 0x80064F60; // restore reference to level_script_entry
 
-        *sRegister = 16; // courtyard
+        *sRegister = 16; // castle grounds
         *sDelayFrames = 0;
         *sDelayFrames2 = 0;
         sTransitionColorFadeCount[0] = 0;
@@ -172,12 +166,5 @@ void update_recording() {
         sTransitionColorFadeCount[3] = 0;
 
         *p = *sCurrentCmd;
-    } else {
-        /*if (do_control()) {
-            restart_playback();
-        } else {
-            advance_playback();
-        }*/
     }
-    gMarioStates->numLives = lagCounter % 100;
 }

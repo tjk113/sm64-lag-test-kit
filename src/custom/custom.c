@@ -6,7 +6,7 @@
 void custom_entry(void *func, s32 eventId) {
     if (func == profiler_log_thread5_time) {
         if (eventId == THREAD5_END) {
-            update_lag();
+            //update_lag();
         } else if (eventId == INPUT_POLL) {
             update_recording();
         }
