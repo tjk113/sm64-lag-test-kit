@@ -107,10 +107,19 @@ struct MainPoolState {
     struct MainPoolState *prev;
 };
 
+struct LevelCommand {
+    /*00*/ u8 type;
+    /*01*/ u8 size;
+    /*02*/ // variable sized argument data
+};
+
 extern u32 sSegmentTable[32];
 extern u32 sPoolFreeSpace;
 extern s16 sTransitionTimer;
 extern u8 sTransitionColorFadeCount[4];
+extern u8 gWarpTransRed;
+extern u8 gWarpTransGreen;
+extern u8 gWarpTransBlue;
 
 LevelScript localCmds[4]; // temp buffer for running custom level script commands
 
@@ -129,6 +138,8 @@ void (*level_cmd_load_and_execute)(void) = 0x8037e2c4;
 void (*level_cmd_exit_and_execute)(void) = 0x8037e388;
 struct AllocOnlyPool **sLevelPool = 0x8038b8a0;
 struct MainPoolState **gMainPoolState = 0x8032dd70;
+void (**LevelScriptJumpTable)(void) = 0x8038b8b8;
+int i;
 
 void update_recording() {
     if (do_control()) {
@@ -141,6 +152,8 @@ void update_recording() {
         while ((*gMainPoolState) != NULL) { // restore pool to initial state for level_script_entry
             main_pool_pop_state();
         }
+
+        gHudDisplay.flags = 0; // prevent crash on hud
 
         // reset level script stack
         *sStackTop = sStack;
@@ -155,15 +168,31 @@ void update_recording() {
         level_cmd_load_and_execute();
         *sStack = 0x80064F60; // restore reference to level_script_entry
 
-        *sRegister = 16; // castle grounds
+        *sRegister = 9; // bob-omhb battlefield
         *sDelayFrames = 0;
         *sDelayFrames2 = 0;
 
-        // fix entry transition
+        for (i = 0; i < 58; i++) { // advance to level_main_menu_entry_2[1]
+            LevelScriptJumpTable[((struct LevelCommand*)(*sCurrentCmd))->type]();
+        }
+        *sRegister = 0; // bypass star select by overwriting lvl_set_current_level return value to 0
+
+        // fix transition
+        gWarpTransRed = 255;
+        gWarpTransGreen = 255;
+        gWarpTransBlue = 255;
         sTransitionColorFadeCount[0] = 0;
         sTransitionColorFadeCount[1] = 0;
         sTransitionColorFadeCount[2] = 0;
         sTransitionColorFadeCount[3] = 0;
+
+        // warp dest
+        sWarpDest.type = 1;
+        sWarpDest.levelNum = 9;
+        sWarpDest.areaIdx = 1;
+        sWarpDest.nodeId = 10;
+
+        gMarioStates->action = 1; // crashes if uninitialized
 
         *thread5GameLoopVar_addr = *sCurrentCmd;
     }
