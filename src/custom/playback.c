@@ -119,7 +119,7 @@ s32 *sRegister = 0x8038be24;
 u16 *sDelayFrames = 0x8038B8A4;
 u16 *sDelayFrames2 = 0x8038B8A8;
 s16 *sCurrAreaIndex = 0x8038B8AC;
-LevelScript **p = 0x80206DEC;
+LevelScript **thread5GameLoopVar_addr = 0x80206DEC;
 LevelScript **sCurrentCmd = 0x8038BE28;
 u32 **sStackTop = 0x8038b8b0;
 u32 **sStackBase = 0x8038b8b4;
@@ -160,11 +160,12 @@ void update_recording() {
         *sRegister = 16; // castle grounds
         *sDelayFrames = 0;
         *sDelayFrames2 = 0;
+
         sTransitionColorFadeCount[0] = 0;
         sTransitionColorFadeCount[1] = 0;
         sTransitionColorFadeCount[2] = 0;
         sTransitionColorFadeCount[3] = 0;
 
-        *p = *sCurrentCmd;
+        *thread5GameLoopVar_addr = *sCurrentCmd;
     }
 }
