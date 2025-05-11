@@ -109,50 +109,67 @@ struct MainPoolState {
 };
 
 
-extern struct MainPoolState *gMainPoolState;
-extern uintptr_t sSegmentTable[32];
+extern u32 sSegmentTable[32];
+extern u32 sPoolFreeSpace;
+extern s16 sTransitionTimer;
+extern u8 sTransitionColorFadeCount[4];
+
+
+#define CMD_GET(type, offset) (*(type *) (CMD_PROCESS_OFFSET(offset) + (u8 *)(*sCurrentCmd)))
+#define NEXT_CMD ((struct LevelCommand *) (((*sCurrentCmd)->size << CMD_SIZE_SHIFT) + (u8 *)(*sCurrentCmd)))
+LevelScript localCmds[4];
+s32 *sRegister = 0x8038be24;
+u16 *sDelayFrames = 0x8038B8A4;
+u16 *sDelayFrames2 = 0x8038B8A8;
+s16 *sCurrAreaIndex = 0x8038B8AC;
+LevelScript **p = 0x80206DEC;
+LevelScript **sCurrentCmd = 0x8038BE28;
+u32 **sStackTop = 0x8038b8b0;
+u32 **sStackBase = 0x8038b8b4;
+u32 *sStack = 0x8038BDA0;
+void (*level_cmd_exit)() = 0x8037e404;
+void (*level_cmd_load_and_execute)(void) = 0x8037e2c4;
+void (*level_cmd_exit_and_execute)(void) = 0x8037e388;
+struct AllocOnlyPool **sLevelPool = 0x8038b8a0;
+struct MainPoolState **gMainPoolState = 0x8032dd70;
 
 void update_recording() {
-    LevelScript **p = 0x80206DEC;
-    LevelScript *sCurrentCmd = 0x8038BE28;
-    u32 *sStackTop = 0x8038b8b0;
-    u32 *sStackBase = 0x8038b8b4;
-    void (*level_cmd_exit)() = 0x8037e404;
-    void (*level_cmd_load_and_execute)(void) = 0x8037e2c4;
-    void (*level_cmd_exit_and_execute)(void) = 0x8037e388;
-    struct MainPoolState **gMainPoolState = 0x8032dd70;
-    struct AllocOnlyPool **sLevelPool = 0x8038b8a0;
-    s32 *sRegister = 0x8038be24;
-    s32 *sPoolFreeSpace = 0x8033b480;
-    s16 *sCurrAreaIndex = 0x8038b8ac;
-    u32 *gObjParentGraphNode = 0x08038bd88;
+    u8 i;
 
     if (do_control()) {
         curRec = *((struct RecordingHeader*)data);
         //restart_playback();
+
+        // init_level
         init_graph_node_start(NULL, (struct GraphNodeStart *) &gObjParentGraphNode);
         clear_objects();
         clear_area_graph_nodes();
         clear_areas();
-        while ((*gMainPoolState)->prev != NULL) { // restore pool to initial state for level_script_entry
-            *sPoolFreeSpace = (*gMainPoolState)->freeSpace;
+
+        while ((*gMainPoolState) != NULL) { // restore pool to initial state for level_script_entry
             main_pool_pop_state();
         }
-        gHudDisplay.flags = 0; // intro crashes without this
-        *sStackTop = 0x8038BDA0; // reset stack ptrs to base for level_script_entry
-        *sStackBase = 0x8038BDA0;
-        *sCurrentCmd = (u32)segmented_to_virtual(level_script_entry) + 4; // skip init_level due to wiggler/chain chomp pool allocation
-        //curCmd[0] = EXIT();
-        //level_cmd_exit();
-        /*sRegister = 16;
-        addr = (u32)load_segment(0x15, _scriptsSegmentRomStart, _scriptsSegmentRomEnd, MEMORY_POOL_LEFT) & 0x1FFFFFFF;
-        a = addr;
-        sCurrentCmd[0] = addr | 0x80000000;*/
-        /*sCurrentCmd[0] = CMD_BBH(0x00, 0x10, 0x15);
-        sCurrentCmd[1] = CMD_PTR(_scriptsSegmentRomStart);
-        sCurrentCmd[2] = CMD_PTR(_scriptsSegmentRomEnd);
-        sCurrentCmd[3] = CMD_PTR(level_main_scripts_entry);
-        level_cmd_load_and_execute();*/
+
+        // reset level script stack
+        *sStackTop = sStack;
+        *sStackBase = NULL;
+
+        // load and execute level_main_scripts_entry
+        (*sCurrentCmd) = localCmds;
+        (*sCurrentCmd)[0] = CMD_BBH(0x00, 0x10, 0x15);
+        (*sCurrentCmd)[1] = CMD_PTR(_scriptsSegmentRomStart);
+        (*sCurrentCmd)[2] = CMD_PTR(_scriptsSegmentRomEnd);
+        (*sCurrentCmd)[3] = CMD_PTR(level_main_scripts_entry);
+        level_cmd_load_and_execute();
+        *sStack = 0x80064F60; // restore reference to level_script_entry
+
+        *sRegister = 16; // courtyard
+        *sDelayFrames = 0;
+        *sDelayFrames2 = 0;
+        sTransitionColorFadeCount[0] = 0;
+        sTransitionColorFadeCount[1] = 0;
+        sTransitionColorFadeCount[2] = 0;
+        sTransitionColorFadeCount[3] = 0;
 
         *p = *sCurrentCmd;
     } else {
