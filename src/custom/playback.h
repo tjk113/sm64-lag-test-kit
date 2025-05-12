@@ -2,12 +2,13 @@
 #define PLAYBACK_H
 
 #include <types.h>
+#include "level_load.h"
 
 struct RecordingFrame {
     u16 button;
-	s8 stick_x;
-	s8 stick_y;
-    u16 cam_yaw;
+	s8 stickX;
+	s8 stickY;
+    u16 camYaw;
 };
 
 struct MemBlock {
@@ -16,13 +17,14 @@ struct MemBlock {
 };
 
 struct RecordingHeader {
-    u16 mem_blocks_length;
+    u16 memBlocksLength;
     u16 length;
-    struct MemBlock *state_mem_blocks;
-    u8 *state_data;
+    struct LevelLoadParams levelLoadParams;
+    struct MemBlock *stateMemBlocks;
+    u8 *stateData;
     struct RecordingFrame *inputs;
 };
 
-extern void update_recording();
+extern void update_playback();
 
 #endif

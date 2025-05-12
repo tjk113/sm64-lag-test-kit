@@ -8,7 +8,7 @@ void custom_entry(void *func, s32 eventId) {
         if (eventId == THREAD5_END) {
             curFrameViCount = 0;
         } else if (eventId == INPUT_POLL) {
-            update_recording();
+            update_playback();
         }
     } else if (func == profiler_log_vblank_time) {
         update_lag();
