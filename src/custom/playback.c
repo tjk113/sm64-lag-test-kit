@@ -120,6 +120,7 @@ extern u8 sTransitionColorFadeCount[4];
 extern u8 gWarpTransRed;
 extern u8 gWarpTransGreen;
 extern u8 gWarpTransBlue;
+extern s16 gDialogID;
 
 LevelScript localCmds[4]; // temp buffer for running custom level script commands
 
@@ -142,6 +143,7 @@ void (**LevelScriptJumpTable)(void) = 0x8038b8b8;
 int i;
 
 void update_recording() {
+    gMarioState->numLives = lagCounter % 100;
     if (do_control()) {
         // init_level
         init_graph_node_start(NULL, (struct GraphNodeStart *) &gObjParentGraphNode);

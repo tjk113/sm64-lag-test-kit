@@ -4,6 +4,7 @@
 #include <types.h>
 
 extern u32 lagCounter;
+extern u32 curFrameViCount;
 void update_lag();
 
 #endif
