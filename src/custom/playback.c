@@ -11,11 +11,13 @@
 #include "playback.h"
 
 
+#define DATA_SIZE 0x20000
 extern u8 data[];
 u32 marker = 0x5A83B1C0;
 u8 *data_ptr = data;
+u32 data_size = DATA_SIZE;
 u32 recordingCount = 0;
-u8 data[0x10000] = { 0 };
+u8 data[DATA_SIZE] = { 0 };
 
 struct RecordingHeader curRec;
 u16 buttonsDownLastFrame = 0;
