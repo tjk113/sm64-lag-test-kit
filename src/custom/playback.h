@@ -9,6 +9,7 @@ struct RecordingFrame {
 	s8 stickX;
 	s8 stickY;
     u16 camYaw;
+    u16 cameraMovementFlags;
 };
 
 struct MemBlock {

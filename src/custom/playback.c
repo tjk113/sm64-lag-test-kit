@@ -59,6 +59,7 @@ void write_inputs() {
             areaCam->yaw = curInputs.camYaw;
         }
     }
+    gCameraMovementFlags = (curInputs.cameraMovementFlags & 0x2100) | (gCameraMovementFlags & 0xDEFF);
 }
 
 void restart_playback() {
@@ -92,7 +93,7 @@ u8 do_control() {
         if (recordingIndex == recordingCount) {
             recordingIndex = 0;
         }
-        curRec = *(struct RecordingHeader*)data;
+        curRec = ((struct RecordingHeader*)data)[recordingIndex];
         camControl = FALSE;
         restartPlayback = 1;
     }
@@ -121,17 +122,4 @@ void update_playback() {
         }
         gMarioStates->numLives = lagCounter % 100;
     }
-    /*
-    if (gGlobalTimer < START_TIMER) {
-        return;
-    } else if (gGlobalTimer == START_TIMER) {
-        curRec = *((struct RecordingHeader*)data);
-        restart_playback();
-    } else {
-        if (do_control()) {
-            restart_playback();
-        } else {
-            advance_playback();
-        }
-    }*/
 }
