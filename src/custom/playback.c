@@ -47,8 +47,13 @@ void write_inputs() {
     struct RecordingFrame curInputs = curRec.inputs[frame];
 
     u16 button = curInputs.button;
-    if (camControl) {
+    if (camControl & CAM_CONTROL_ON) {
         button = (button & 0xFFE0) | (gControllerPads[0].button & 0x001F);
+    }
+    if (camControl & CAM_CONTROL_MARIO) {
+        sSelectionFlags |= 4;
+    } else if (camControl & CAM_CONTROL_FIXED) {
+        sSelectionFlags &= ~4;
     }
 
     gControllerPads[0].button = button;
@@ -87,9 +92,16 @@ u8 do_control() {
     u16 buttonsPressed = gControllerPads[0].button & ~buttonsDownLastFrame;
     buttonsDownLastFrame = gControllerPads[0].button;
 
-    if (buttonsPressed & CONT_UP) { // toggle cam control
-        camControl ^= 1;
+    if (buttonsPressed & CONT_DOWN) { // orig cam (need to restart if switched cam modes)
+        camControl = CAM_CONTROL_OFF;
+    } else if (buttonsPressed & CONT_UP) { // cam control
+        camControl = CAM_CONTROL_ON;
+    } else if (buttonsPressed & CONT_LEFT) { // cam control with R -> mario cam
+        camControl = CAM_CONTROL_ON | CAM_CONTROL_MARIO;
+    } else if (buttonsPressed & CONT_RIGHT) { // cam control with R -> fixed cam
+        camControl = CAM_CONTROL_ON | CAM_CONTROL_FIXED;
     }
+
     if (buttonsPressed & CONT_L) { // advance to next recording + restart
         recordingIndex++;
         if (recordingIndex == recordingCount) {

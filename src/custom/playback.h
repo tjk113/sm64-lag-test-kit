@@ -4,6 +4,11 @@
 #include <types.h>
 #include "level_load.h"
 
+#define CAM_CONTROL_OFF     0
+#define CAM_CONTROL_ON      1
+#define CAM_CONTROL_MARIO   2
+#define CAM_CONTROL_FIXED   4
+
 struct RecordingFrame {
     u16 button;
 	s8 stickX;
