@@ -33,6 +33,9 @@ void load_level(struct LevelLoadParams *p) {
     u8 i;
 
     // init_level
+    init_graph_node_start(NULL, (struct GraphNodeStart *) &gObjParentGraphNode);
+    clear_objects(); // !not referenced?
+    clear_area_graph_nodes();
     clear_areas();
 
     // restore pool to initial state for level_script_entry

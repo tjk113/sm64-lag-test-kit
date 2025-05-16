@@ -8,7 +8,7 @@
 #include "custom.h"
 #include "lag.h"
 #include "level_load.h"
-#include "playback.h"
+#include "tas_playback.h"
 
 
 #define DATA_SIZE 0x20000
