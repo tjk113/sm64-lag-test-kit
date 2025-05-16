@@ -34,7 +34,7 @@ void load_level(struct LevelLoadParams *p) {
 
     // init_level
     init_graph_node_start(NULL, (struct GraphNodeStart *) &gObjParentGraphNode);
-    clear_objects(); // !not referenced?
+    clear_objects();
     clear_area_graph_nodes();
     clear_areas();
 
