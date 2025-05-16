@@ -15,7 +15,7 @@
 extern u8 data[];
 u32 marker = 0x5A83B1C0;
 u8 *dataPtr = data;
-u32 datasize = DATA_SIZE;
+u32 dataSize = DATA_SIZE;
 u32 recordingCount = 0;
 u8 data[DATA_SIZE] = { 0 };
 
