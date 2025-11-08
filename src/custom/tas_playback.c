@@ -26,6 +26,9 @@ u16 frame = 0;
 u8 camControl = FALSE;
 u8 playbackInit = FALSE;
 
+u16 *const gRandomSeed16 = 0x8038EEE0;
+
+
 void write_mem_blocks() {
     u8 *curData = curRec.stateData;
     u16 i = 0;
@@ -67,6 +70,8 @@ void write_inputs() {
         }
     }
     gCameraMovementFlags = (curInputs.cameraMovementFlags & 0x2100) | (gCameraMovementFlags & 0xDEFF);
+
+    *gRandomSeed16 = curInputs.gRandomSeed16;
 }
 
 void restart_playback() {
