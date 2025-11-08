@@ -26,7 +26,7 @@ u16 frame = 0;
 u8 camControl = FALSE;
 u8 playbackInit = FALSE;
 
-u16 *const gRandomSeed16 = 0x8038EEE0;
+u16 *const gRandomSeed16 = (u16 *const)0x8038EEE0;
 
 
 void write_mem_blocks() {
@@ -52,11 +52,14 @@ void write_inputs() {
     u16 button = curInputs.button;
     if (camControl & CAM_CONTROL_ON) {
         button = (button & 0xFFE0) | (gControllerPads[0].button & 0x001F);
-    }
-    if (camControl & CAM_CONTROL_MARIO) {
-        sSelectionFlags |= 4;
-    } else if (camControl & CAM_CONTROL_FIXED) {
-        sSelectionFlags &= ~4;
+
+        if (camControl & CAM_CONTROL_MARIO) {
+            sSelectionFlags |= 4;
+        } else if (camControl & CAM_CONTROL_FIXED) {
+            sSelectionFlags &= ~4;
+        }
+    } else {
+        sSelectionFlags = curInputs.cameraSelectionFlags;
     }
 
     gControllerPads[0].button = button;
