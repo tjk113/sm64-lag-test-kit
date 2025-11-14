@@ -1,3 +1,17 @@
+# TAS Playback ROM
+
+ROM for playing back TASes on console with camera control.
+
+Controls:
+- D-pad down: Disable cam control
+- D-pad up: Enable cam control
+- D-pad left: Cam control with mario cam
+- D-pad right: Cam control with fixed cam
+- Start: Restart current TAS
+- L: Play next TAS
+
+[Lua script for adding TASes to the ROM.](https://github.com/ap00001111/SM64LuaRedux)
+
 # Super Mario 64
 
 - This repo contains a full decompilation of Super Mario 64 of the following releases: Japan (jp), North America (us), Europe (eu), Shindou (sh) and iQue Player (cn).
