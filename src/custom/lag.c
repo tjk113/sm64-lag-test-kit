@@ -1,17 +1,16 @@
 #include <game/profiler.h>
 #include <types.h>
 
-u32 lagCounter = 0;
-u32 curFrameViCount = 0;
-u8 logParity = FALSE;
-OSTime lastTime = 0;
+u32 gLagCounter = 0;
+u32 gCurFrameViCount = 0;
+u8 sLogParity = FALSE;
 
-void update_lag() { // no clue how reliable this would be on console, need a proper hook per vi really
-    if (logParity) {
-        curFrameViCount++;
-        if (curFrameViCount > 2) {
-            lagCounter++;
+void update_lag(void) { // no clue how reliable this would be on console, need a proper hook per vi really
+    if (sLogParity) {
+        gCurFrameViCount++;
+        if (gCurFrameViCount > 2) {
+            gLagCounter++;
         }
     }
-    logParity = !logParity;
+    sLogParity = !sLogParity;
 }

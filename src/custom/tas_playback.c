@@ -1,6 +1,9 @@
 #include <string.h>
+#include "sm64.h"
 
+#include <buffers/buffers.h>
 #include <game/area.h>
+#include <game/camera.h>
 #include <game/game_init.h>
 #include <game/level_update.h>
 #include <game/print.h>
@@ -10,60 +13,61 @@
 #include "level_load.h"
 #include "tas_playback.h"
 
-
 #define DATA_SIZE 0x20000
-extern u8 data[];
-u32 marker = 0x5A83B1C0;
-u8 *dataPtr = data;
-u32 dataSize = DATA_SIZE;
-u32 recordingCount = 0;
-u8 data[DATA_SIZE] = { 0 };
 
-struct RecordingHeader curRec;
-u16 buttonsDownLastFrame = 0;
-u16 recordingIndex = 0;
-u16 frame = 0;
-u8 camControl = FALSE;
-u8 playbackInit = FALSE;
+extern u8 sData[];
 
-u16 *const gRandomSeed16 = (u16 *const)0x8038EEE0;
+u32 sMarker = 0x5A83B1C0;
+u8 *sDataPtr = sData;
+u32 sDataSize = DATA_SIZE;
+u32 sRecordingCount = 0;
+u8 sData[DATA_SIZE] = { 0 };
 
+struct RecordingHeader sCurRec;
+u16 sButtonsDownLastFrame = 0;
+u16 sRecordingIndex = 0;
+u16 sFrame = 0;
+u8 sCamControl = CAM_CONTROL_OFF;
+u8 sPlaybackInit = FALSE;
+u8 sRestartPlaybackScheduled = FALSE;
 
-void write_mem_blocks() {
-    u8 *curData = curRec.stateData;
+u16 *const gRandomSeed16 = (u16 *const) 0x8038EEE0;
+
+void write_mem_blocks(void) {
+    u8 *curData = sCurRec.stateData;
     u16 i = 0;
-    while (i < curRec.memBlocksLength) {
-        struct MemBlock memBlock = curRec.stateMemBlocks[i];
+    while (i < sCurRec.memBlocksLength) {
+        struct MemBlock memBlock = sCurRec.stateMemBlocks[i];
         memcpy(memBlock.addr, curData, memBlock.size);
         curData += memBlock.size;
         i++;
     }
 }
 
-void load_state() {
+void load_state(void) {
     write_mem_blocks();
-    load_level(&curRec.levelLoadParams);
+    load_level(&sCurRec.levelLoadParams);
     write_mem_blocks();
 }
 
-void write_inputs() {
-    struct RecordingFrame curInputs = curRec.inputs[frame];
+void write_inputs(void) {
+    struct RecordingFrame curInputs = sCurRec.inputs[sFrame];
 
     u16 button = curInputs.button;
-    if (camControl & CAM_CONTROL_ON) {
-        button = (button & 0xFFE0) | (gControllerPads[0].button & 0x001F);
+    if (sCamControl & CAM_CONTROL_ON) {
+        button = (button & ~(R_TRIG | C_BUTTONS)) | (gControllerPads[0].button & (R_TRIG | C_BUTTONS));
 
-        if (camControl & CAM_CONTROL_MARIO) {
-            sSelectionFlags |= 4;
-        } else if (camControl & CAM_CONTROL_FIXED) {
-            sSelectionFlags &= ~4;
+        if (sCamControl & CAM_CONTROL_MARIO) {
+            sSelectionFlags |= CAM_MODE_MARIO_SELECTED;
+        } else if (sCamControl & CAM_CONTROL_FIXED) {
+            sSelectionFlags &= ~CAM_MODE_MARIO_SELECTED;
         }
     } else {
         sSelectionFlags = curInputs.cameraSelectionFlags;
     }
 
     gControllerPads[0].button = button;
-    gControllerPads[0].stick_x = curInputs.stickX; 
+    gControllerPads[0].stick_x = curInputs.stickX;
     gControllerPads[0].stick_y = curInputs.stickY;
 
     if (gCurrentArea != NULL) {
@@ -72,76 +76,103 @@ void write_inputs() {
             areaCam->yaw = curInputs.camYaw;
         }
     }
-    gCameraMovementFlags = (curInputs.cameraMovementFlags & 0x2100) | (gCameraMovementFlags & 0xDEFF);
+    gCameraMovementFlags = (curInputs.cameraMovementFlags & (CAM_MOVING_INTO_MODE | CAM_MOVE_C_UP_MODE))
+                           | (gCameraMovementFlags & ~(CAM_MOVING_INTO_MODE | CAM_MOVE_C_UP_MODE));
 
-    *gRandomSeed16 = curInputs.gRandomSeed16;
+    *gRandomSeed16 = curInputs.randomSeed16;
 }
 
-void restart_playback() {
-    frame = 0;
-    lagCounter = 0;
-    load_state();
-    write_inputs();
+u8 can_restart_playback(void) {
+    // FIXME: this assumes that gGlobalTimer is located at offset 0x200 in the state data
+    u32 curRecGlobalTimer = *(u32 *)(sCurRec.stateData + 0x200);
+    return (curRecGlobalTimer % ARRAY_COUNT(gGfxPools)) == (gGlobalTimer % ARRAY_COUNT(gGfxPools));
 }
 
-void advance_playback() {
-    if (++frame >= curRec.length) {
+u8 restart_playback(void) {
+    u8 restarted;
+
+    if (can_restart_playback()) {
+        sFrame = 0;
+        gLagCounter = 0;
+        load_state();
+        write_inputs();
+        sRestartPlaybackScheduled = FALSE;
+        restarted = TRUE;
+    } else {
+        sRestartPlaybackScheduled = TRUE;
+        restarted = FALSE;
+    }
+
+    return restarted;
+}
+
+void advance_playback(void) {
+    if (++sFrame >= sCurRec.length) {
         restart_playback();
     } else {
-        if (frame == 1) {
-            lagCounter = 0;
+        if (sFrame == 1) {
+            gLagCounter = 0;
         }
         write_inputs();
     }
 }
 
-u8 do_control() {
-    u8 restartPlayback = 0;
-    u16 buttonsPressed = gControllerPads[0].button & ~buttonsDownLastFrame;
-    buttonsDownLastFrame = gControllerPads[0].button;
+u8 do_control(void) {
+    u8 restartPlayback = FALSE;
+    u16 buttonsPressed = gControllerPads[0].button & ~sButtonsDownLastFrame;
+    sButtonsDownLastFrame = gControllerPads[0].button;
 
-    if (buttonsPressed & CONT_DOWN) { // orig cam (need to restart if switched cam modes)
-        camControl = CAM_CONTROL_OFF;
-    } else if (buttonsPressed & CONT_UP) { // cam control
-        camControl = CAM_CONTROL_ON;
-    } else if (buttonsPressed & CONT_LEFT) { // cam control with R -> mario cam
-        camControl = CAM_CONTROL_ON | CAM_CONTROL_MARIO;
-    } else if (buttonsPressed & CONT_RIGHT) { // cam control with R -> fixed cam
-        camControl = CAM_CONTROL_ON | CAM_CONTROL_FIXED;
+    if (buttonsPressed & D_JPAD) { // orig cam (need to restart if switched cam modes)
+        sCamControl = CAM_CONTROL_OFF;
+    } else if (buttonsPressed & U_JPAD) { // cam control
+        sCamControl = CAM_CONTROL_ON;
+    } else if (buttonsPressed & L_JPAD) { // cam control with R -> mario cam
+        sCamControl = CAM_CONTROL_ON | CAM_CONTROL_MARIO;
+    } else if (buttonsPressed & R_JPAD) { // cam control with R -> fixed cam
+        sCamControl = CAM_CONTROL_ON | CAM_CONTROL_FIXED;
     }
 
-    if (buttonsPressed & CONT_L) { // advance to next recording + restart
-        recordingIndex++;
-        if (recordingIndex == recordingCount) {
-            recordingIndex = 0;
+    if (buttonsPressed & L_TRIG) { // advance to next recording + restart
+        sRecordingIndex++;
+        if (sRecordingIndex == sRecordingCount) {
+            sRecordingIndex = 0;
         }
-        curRec = ((struct RecordingHeader*)data)[recordingIndex];
-        camControl = FALSE;
-        restartPlayback = 1;
-    }
-    if (buttonsPressed & CONT_START) { // restart current
-        restartPlayback = 1;
+        sCurRec = ((struct RecordingHeader*) sData)[sRecordingIndex];
+        sCamControl = CAM_CONTROL_OFF;
+        if (can_restart_playback()) {
+            restartPlayback = TRUE;
+        } else {
+            sRestartPlaybackScheduled = TRUE;
+        }
+    } else if (buttonsPressed & START_BUTTON) { // restart current
+        if (can_restart_playback()) {
+            restartPlayback = TRUE;
+        } else {
+            sRestartPlaybackScheduled = TRUE;
+        }
     }
 
     return restartPlayback;
 }
 
-
-void update_playback() {
-    if (!playbackInit) {
-        if (recordingCount == 0) {
+void update_playback(void) {
+    if (!sPlaybackInit) {
+        if (sRecordingCount == 0) {
             print_text(20, 20, "No recordings loaded");
         } else {
-            curRec = *(struct RecordingHeader*)data;
-            restart_playback();
-            playbackInit = TRUE;
+            sCurRec = *(struct RecordingHeader*) sData;
+            sPlaybackInit = restart_playback();
         }
     } else {
-        if (do_control()) {
-            restart_playback();
-        } else {
+        u8 restarted = FALSE;
+
+        if (sRestartPlaybackScheduled || do_control()) {
+            restarted = restart_playback();
+        }
+        if (!restarted) {
             advance_playback();
         }
-        gMarioStates->numLives = lagCounter % 100;
+
+        gMarioStates->numLives = gLagCounter % 100;
     }
 }

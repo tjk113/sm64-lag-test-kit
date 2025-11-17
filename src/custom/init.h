@@ -8,4 +8,4 @@ struct Hook {
 
 extern void custom_init(void);
 
-#endif
+#endif // INIT_H

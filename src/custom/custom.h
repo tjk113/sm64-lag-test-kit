@@ -5,4 +5,4 @@
 
 extern void custom_entry(void *func, s32 eventId);
 
-#endif
+#endif // CUSTOM_H

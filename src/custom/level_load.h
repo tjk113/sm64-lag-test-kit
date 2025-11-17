@@ -20,4 +20,4 @@ struct LevelCommand {
 
 extern void load_level(struct LevelLoadParams *p);
 
-#endif
+#endif // LEVEL_LOAD_H

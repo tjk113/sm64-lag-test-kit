@@ -16,7 +16,7 @@ struct RecordingFrame {
     u16 camYaw;
     s16 cameraMovementFlags;
     s16 cameraSelectionFlags;
-    u16 gRandomSeed16;
+    u16 randomSeed16;
 };
 
 struct MemBlock {
@@ -35,4 +35,4 @@ struct RecordingHeader {
 
 extern void update_playback();
 
-#endif
+#endif // PLAYBACK_H

@@ -3,8 +3,9 @@
 
 #include <types.h>
 
-extern u32 lagCounter;
-extern u32 curFrameViCount;
+extern u32 gLagCounter;
+extern u32 gCurFrameViCount;
+
 void update_lag();
 
-#endif
+#endif // LAG_H

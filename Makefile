@@ -135,7 +135,7 @@ endif
 # COMPARE - whether to verify the SHA-1 hash of the ROM after building
 #   1 - verifies the SHA-1 hash of the selected version of the game
 #   0 - does not verify the hash
-COMPARE ?= 1
+COMPARE ?= 0
 $(eval $(call validate-option,COMPARE,0 1))
 
 TARGET_STRING := sm64.$(VERSION).$(GRUCODE)
@@ -738,6 +738,7 @@ ifeq ($(COMPILER),ido)
   $(BUILD_DIR)/levels/%/leveldata.o: OPT_FLAGS := -g
   $(BUILD_DIR)/actors/%.o:           OPT_FLAGS := -g
   $(BUILD_DIR)/bin/%.o:              OPT_FLAGS := -g
+  $(BUILD_DIR)/src/custom/%.o:       OPT_FLAGS := -O2
   $(BUILD_DIR)/src/goddard/%.o:      OPT_FLAGS := -g
   $(BUILD_DIR)/src/goddard/%.o:      MIPSISET := -mips1
   $(BUILD_DIR)/lib/asm/__osDisableInt.o: MIPSISET := -mips2
