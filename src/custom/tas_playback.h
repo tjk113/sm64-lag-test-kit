@@ -11,8 +11,8 @@
 
 struct RecordingFrame {
     u16 button;
-	s8 stickX;
-	s8 stickY;
+    s8 stickX;
+    s8 stickY;
     u16 camYaw;
     s16 cameraMovementFlags;
     s16 cameraSelectionFlags;
