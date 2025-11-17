@@ -61,7 +61,7 @@ void load_level(struct LevelLoadParams *p) {
 
     // advance to level_main_menu_entry_2[1]
     for (i = 0; i < 58; i++) {
-        LevelScriptJumpTable[((struct LevelCommand*)(*sCurrentCmd))->type]();
+        LevelScriptJumpTable[((struct LevelCommand *)(*sCurrentCmd))->type]();
     }
     *sRegister = 0; // overwrite lvl_set_current_level return value to 0 to skip star select
 

@@ -137,7 +137,7 @@ u8 do_control(void) {
         if (sRecordingIndex == sRecordingCount) {
             sRecordingIndex = 0;
         }
-        sCurRec = ((struct RecordingHeader*) sData)[sRecordingIndex];
+        sCurRec = ((struct RecordingHeader *) sData)[sRecordingIndex];
         sCamControl = CAM_CONTROL_OFF;
         if (can_restart_playback()) {
             restartPlayback = TRUE;
@@ -160,7 +160,7 @@ void update_playback(void) {
         if (sRecordingCount == 0) {
             print_text(20, 20, "No recordings loaded");
         } else {
-            sCurRec = *(struct RecordingHeader*) sData;
+            sCurRec = *(struct RecordingHeader *) sData;
             sPlaybackInit = restart_playback();
         }
     } else {
