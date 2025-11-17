@@ -33,6 +33,6 @@ struct RecordingHeader {
     struct RecordingFrame *inputs;
 };
 
-extern void update_playback();
+extern void update_playback(void);
 
 #endif // PLAYBACK_H
