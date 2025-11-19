@@ -61,6 +61,7 @@ extern u8 gDemoInputs[];
 extern u16 sRenderingFramebuffer;
 extern u32 gGlobalTimer;
 
+void run_demo_inputs(void);
 void setup_game_memory(void);
 void thread5_game_loop(UNUSED void *arg);
 void clear_framebuffer(s32 color);

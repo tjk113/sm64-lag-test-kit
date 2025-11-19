@@ -2,8 +2,8 @@
 #define INIT_H
 
 struct Hook {
-    void *func;
-    u32 wrapper[3];
+    void *target;
+    void *dest;
 };
 
 extern void custom_init(void);

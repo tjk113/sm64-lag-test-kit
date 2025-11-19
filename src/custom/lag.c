@@ -1,16 +1,13 @@
-#include <game/profiler.h>
-#include <types.h>
+#include <PR/ultratypes.h>
 
+#include "game/main.h"
+
+u32 sPrevNumVblanks = 0;
 u32 gLagCounter = 0;
-u32 gCurFrameViCount = 0;
-u8 sLogParity = FALSE;
 
-void update_lag(void) { // no clue how reliable this would be on console, need a proper hook per vi really
-    if (sLogParity) {
-        gCurFrameViCount++;
-        if (gCurFrameViCount > 2) {
-            gLagCounter++;
-        }
-    }
-    sLogParity = !sLogParity;
+void update_lag(void) {
+    // FIXME: use more reliable vi counter
+    u32 lagFrame = gNumVblanks - (sPrevNumVblanks + 2);
+    sPrevNumVblanks = gNumVblanks;
+    gLagCounter += lagFrame;
 }

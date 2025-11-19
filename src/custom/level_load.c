@@ -1,12 +1,11 @@
-#include <engine/geo_layout.h>
-#include <game/area.h>
-#include <game/level_update.h>
-#include <game/object_list_processor.h>
-#include <level_commands.h>
-#include <levels/scripts.h>
-#include <segment_symbols.h>
-#include <types.h>
-
+#include "engine/geo_layout.h"
+#include "game/area.h"
+#include "game/level_update.h"
+#include "game/object_list_processor.h"
+#include "level_commands.h"
+#include "levels/scripts.h"
+#include "segment_symbols.h"
+#include "types.h"
 #include "level_load.h"
 
 extern u8 sTransitionColorFadeCount[4];

@@ -1,12 +1,12 @@
 #include <string.h>
-#include "sm64.h"
 
-#include <buffers/buffers.h>
-#include <game/area.h>
-#include <game/camera.h>
-#include <game/game_init.h>
-#include <game/level_update.h>
-#include <game/print.h>
+#include "buffers/buffers.h"
+#include "game/area.h"
+#include "game/camera.h"
+#include "game/game_init.h"
+#include "game/level_update.h"
+#include "game/print.h"
+#include "sm64.h"
 
 #include "custom.h"
 #include "lag.h"

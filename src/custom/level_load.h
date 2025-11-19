@@ -1,8 +1,8 @@
 #ifndef LEVEL_LOAD_H
 #define LEVEL_LOAD_H
 
-#include <game/level_update.h>
-#include <types.h>
+#include "game/level_update.h"
+#include "types.h"
 
 struct LevelLoadParams {
     struct WarpDest warpDest;

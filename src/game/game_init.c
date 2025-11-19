@@ -530,7 +530,7 @@ void read_controller_inputs(void) {
         release_rumble_pak_control();
 #endif
     }
-    profiler_log_thread5_time(INPUT_POLL);
+    run_demo_inputs();
 
     for (i = 0; i < 2; i++) {
         struct Controller *controller = &gControllers[i];

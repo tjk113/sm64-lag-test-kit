@@ -1,8 +1,8 @@
 #ifndef PLAYBACK_H
 #define PLAYBACK_H
 
-#include <types.h>
 #include "level_load.h"
+#include "types.h"
 
 #define CAM_CONTROL_OFF     0
 #define CAM_CONTROL_ON      1

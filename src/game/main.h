@@ -1,6 +1,8 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#include <ultra64.h>
+
 #include "config.h"
 
 extern OSThread D_80339210;
