@@ -1,7 +1,6 @@
 #include <string.h>
 
 #include "buffers/buffers.h"
-#include "engine/behavior_script.h"
 #include "game/area.h"
 #include "game/camera.h"
 #include "game/game_init.h"
