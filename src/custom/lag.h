@@ -1,10 +1,10 @@
 #ifndef LAG_H
 #define LAG_H
 
-#include <types.h>
+#include <PR/ultratypes.h>
 
-extern u32 lagCounter;
-extern u32 curFrameViCount;
-void update_lag();
+extern u32 gLagCounter;
 
-#endif
+void update_lag(void);
+
+#endif // LAG_H

@@ -6,8 +6,8 @@
 #include "segments.h"
 #include "segment_symbols.h"
 
+#include "game/game_init.h"
 #include "game/memory.h"
-#include "game/profiler.h"
 
 #include "custom.h"
 #include "init.h"
@@ -15,10 +15,8 @@
 #define ALIGN16(val) (((val) + 0xF) & ~0xF)
 
 static struct Hook sHookTargets[] = {
-    { profiler_log_thread5_time, { 0 } },
-    { profiler_log_thread4_time, { 0 } },
-    { profiler_log_gfx_time, { 0 } },
-    { profiler_log_vblank_time, { 0 } },
+    { run_demo_inputs, run_demo_inputs_hook },
+    { display_and_vsync, display_and_vsync_hook },
 };
 
 static void load_engine_code_segment(void) {
@@ -38,23 +36,16 @@ void custom_init(void) {
 
     load_engine_code_segment();
 
-    for (i = 0; i < sizeof(sHookTargets) / sizeof(sHookTargets[0]); i++) {
+    for (i = 0; i < ARRAY_COUNT(sHookTargets); i++) {
         struct Hook *hook = &sHookTargets[i];
-        u32 *cur = (u32 *) hook->func;
+        u32 *cur = (u32 *) hook->target;
 
         // jr ra
         while (*cur != 0x03e00008) {
             cur++;
         }
 
-        cur[1] = cur[-1]; // move stack addiu to delay slot
-        cur[-1] = 0x8fa50018; // lw a1, 24(sp) (before frame is pushed out)
-        cur[0] = 0x08000000 | (((u32) hook->wrapper & 0xffffff) >> 2); // j hook->wrapper
-        osInvalICache(&cur[-1], 12);
-
-        hook->wrapper[0] = 0x3c040000 | ((u32) hook->func >> 16); // lui a0, uhi hook->func
-        hook->wrapper[1] = 0x08000000 | (((u32) custom_entry & 0xffffff) >> 2); // j custom_entry
-        hook->wrapper[2] = 0x34840000 | ((u32) hook->func & 0xffff); // ori a0, a0, ulo hook->func
-        osInvalICache(hook->wrapper, 12);
+        cur[0] = 0x08000000 | (((u32) hook->dest & 0xffffff) >> 2); // j hook->dest
+        osInvalICache(&cur[0], 4);
     }
 }

@@ -1,8 +1,7 @@
 #ifndef CUSTOM_H
 #define CUSTOM_H
 
-#include <types.h>
+void run_demo_inputs_hook(void);
+void display_and_vsync_hook(void);
 
-extern void custom_entry(void *func, s32 eventId);
-
-#endif
+#endif // CUSTOM_H

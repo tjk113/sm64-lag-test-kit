@@ -30,7 +30,6 @@ struct ProfilerFrameData {
 // thread event IDs
 enum ProfilerGameEvent {
     THREAD5_START,
-    INPUT_POLL,
     LEVEL_SCRIPT_EXECUTE,
     BEFORE_DISPLAY_LISTS,
     AFTER_DISPLAY_LISTS,

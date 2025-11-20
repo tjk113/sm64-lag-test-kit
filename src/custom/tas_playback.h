@@ -1,8 +1,8 @@
 #ifndef PLAYBACK_H
 #define PLAYBACK_H
 
-#include <types.h>
 #include "level_load.h"
+#include "types.h"
 
 #define CAM_CONTROL_OFF     0
 #define CAM_CONTROL_ON      1
@@ -11,12 +11,12 @@
 
 struct RecordingFrame {
     u16 button;
-	s8 stickX;
-	s8 stickY;
+    s8 stickX;
+    s8 stickY;
     u16 camYaw;
     s16 cameraMovementFlags;
     s16 cameraSelectionFlags;
-    u16 gRandomSeed16;
+    u16 randomSeed16;
 };
 
 struct MemBlock {
@@ -33,6 +33,6 @@ struct RecordingHeader {
     struct RecordingFrame *inputs;
 };
 
-extern void update_playback();
+void update_playback(void);
 
-#endif
+#endif // PLAYBACK_H
