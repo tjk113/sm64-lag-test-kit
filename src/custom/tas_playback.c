@@ -97,7 +97,7 @@ u8 can_restart_playback(u32 index) {
     u16 i = 0;
 
     struct RecordingHeader *rec = &((struct RecordingHeader *) sData)[index];
-    u32 recGlobalTimer = 0;
+    u32 recGlobalTimer = gGlobalTimer;
 
     curData = rec->stateData;
     while (i < rec->memBlocksLength) {
