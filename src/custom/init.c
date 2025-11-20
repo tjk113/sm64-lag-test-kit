@@ -16,7 +16,7 @@
 
 static struct Hook sHookTargets[] = {
     { run_demo_inputs, run_demo_inputs_hook },
-    { display_and_vsync, display_and_vsync_hook }
+    { display_and_vsync, display_and_vsync_hook },
 };
 
 static void load_engine_code_segment(void) {
