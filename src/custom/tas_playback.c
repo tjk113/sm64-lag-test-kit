@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "buffers/buffers.h"
+#include "engine/behavior_script.h"
 #include "game/area.h"
 #include "game/camera.h"
 #include "game/game_init.h"
@@ -24,14 +25,24 @@ u32 sRecordingCount = 0;
 u8 sData[DATA_SIZE] = { 0 };
 
 struct RecordingHeader sCurRec;
-u16 sButtonsDownLastFrame = 0;
-u16 sRecordingIndex = 0;
+u32 sLoadedRecordingIndex = 0;
+u32 sScheduledRecordingIndex = 0;
 u16 sFrame = 0;
+u16 sButtonsDownLastFrame = 0;
 u8 sCamControl = CAM_CONTROL_OFF;
 u8 sPlaybackInit = FALSE;
 u8 sRestartPlaybackScheduled = FALSE;
 
 u16 *const gRandomSeed16 = (u16 *const) 0x8038EEE0;
+
+u8 load_recording_data(u32 index) {
+    if (!sPlaybackInit || sLoadedRecordingIndex != index) {
+        sCurRec = ((struct RecordingHeader *) sData)[index];
+        sLoadedRecordingIndex = index;
+        return TRUE;
+    }
+    return FALSE;
+}
 
 void write_mem_blocks(void) {
     u8 *curData = sCurRec.stateData;
@@ -52,8 +63,8 @@ void load_state(void) {
 
 void write_inputs(void) {
     struct RecordingFrame curInputs = sCurRec.inputs[sFrame];
-
     u16 button = curInputs.button;
+
     if (sCamControl & CAM_CONTROL_ON) {
         button = (button & ~(R_TRIG | C_BUTTONS)) | (gControllerPads[0].button & (R_TRIG | C_BUTTONS));
 
@@ -82,16 +93,35 @@ void write_inputs(void) {
     *gRandomSeed16 = curInputs.randomSeed16;
 }
 
-u8 can_restart_playback(void) {
-    // FIXME: this assumes that gGlobalTimer is located at offset 0x200 in the state data
-    u32 curRecGlobalTimer = *(u32 *)(sCurRec.stateData + 0x200);
-    return (curRecGlobalTimer % ARRAY_COUNT(gGfxPools)) == (gGlobalTimer % ARRAY_COUNT(gGfxPools));
+u8 can_restart_playback(u32 index) {
+    u8 *curData;
+    u16 i = 0;
+
+    struct RecordingHeader *rec = &((struct RecordingHeader *) sData)[index];
+    u32 recGlobalTimer = 0;
+
+    curData = rec->stateData;
+    while (i < rec->memBlocksLength) {
+        struct MemBlock memBlock = rec->stateMemBlocks[i];
+        if (memBlock.addr == &gGlobalTimer && memBlock.size == sizeof(gGlobalTimer)) {
+            memcpy(&recGlobalTimer, curData, memBlock.size);
+            break;
+        }
+        curData += memBlock.size;
+        i++;
+    }
+
+    return (recGlobalTimer % ARRAY_COUNT(gGfxPools)) == (gGlobalTimer % ARRAY_COUNT(gGfxPools));
 }
 
 u8 restart_playback(void) {
+    u32 index = sScheduledRecordingIndex;
     u8 restarted;
 
-    if (can_restart_playback()) {
+    if (can_restart_playback(index)) {
+        if (load_recording_data(index)){
+            sCamControl = CAM_CONTROL_OFF;
+        }
         sFrame = 0;
         gLagCounter = 0;
         load_state();
@@ -133,19 +163,14 @@ u8 do_control(void) {
     }
 
     if (buttonsPressed & L_TRIG) { // advance to next recording + restart
-        sRecordingIndex++;
-        if (sRecordingIndex == sRecordingCount) {
-            sRecordingIndex = 0;
-        }
-        sCurRec = ((struct RecordingHeader *) sData)[sRecordingIndex];
-        sCamControl = CAM_CONTROL_OFF;
-        if (can_restart_playback()) {
+        sScheduledRecordingIndex = (sScheduledRecordingIndex + 1) % sRecordingCount;
+        if (can_restart_playback(sScheduledRecordingIndex)) {
             restartPlayback = TRUE;
         } else {
             sRestartPlaybackScheduled = TRUE;
         }
     } else if (buttonsPressed & START_BUTTON) { // restart current
-        if (can_restart_playback()) {
+        if (can_restart_playback(sScheduledRecordingIndex)) {
             restartPlayback = TRUE;
         } else {
             sRestartPlaybackScheduled = TRUE;
@@ -160,7 +185,6 @@ void update_playback(void) {
         if (sRecordingCount == 0) {
             print_text(20, 20, "No recordings loaded");
         } else {
-            sCurRec = *(struct RecordingHeader *) sData;
             sPlaybackInit = restart_playback();
         }
     } else {
@@ -173,6 +197,6 @@ void update_playback(void) {
             advance_playback();
         }
 
-        gMarioStates->numLives = gLagCounter % 100;
+        gMarioStates[0].numLives = gLagCounter % 100;
     }
 }

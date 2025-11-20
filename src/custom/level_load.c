@@ -76,7 +76,7 @@ void load_level(struct LevelLoadParams *p) {
 
     // prevent crashes
     gHudDisplay.flags = 0;
-    gMarioStates->action = 1;
+    gMarioStates[0].action = 1;
 
     *thread5GameLoopVar_addr = *sCurrentCmd;
 }

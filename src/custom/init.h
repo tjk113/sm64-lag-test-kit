@@ -6,6 +6,6 @@ struct Hook {
     void *dest;
 };
 
-extern void custom_init(void);
+void custom_init(void);
 
 #endif // INIT_H

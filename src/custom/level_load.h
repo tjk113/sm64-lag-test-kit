@@ -18,6 +18,6 @@ struct LevelCommand {
     /*02*/ // variable sized argument data
 };
 
-extern void load_level(struct LevelLoadParams *p);
+void load_level(struct LevelLoadParams *p);
 
 #endif // LEVEL_LOAD_H
