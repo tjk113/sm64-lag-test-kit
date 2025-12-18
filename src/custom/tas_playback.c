@@ -65,13 +65,12 @@ u8 should_set_cam_yaw(void) {
     u32 act = gMarioState->action;
 
     // always use normal cam yaw on level exit
-    if (act == ACT_STAR_DANCE_EXIT) {
+    if ((act == ACT_STAR_DANCE_EXIT) || (gMarioObject == NULL)) {
         return FALSE;
     }
 
     // always overwrite cam yaw during gameplay
-    if (((act != ACT_STAR_DANCE_NO_EXIT) && (act != ACT_STAR_DANCE_WATER))
-        || (gMarioObject == NULL)) {
+    if (((act != ACT_STAR_DANCE_NO_EXIT) && (act != ACT_STAR_DANCE_WATER)) {
         return TRUE;
     }
 
