@@ -70,7 +70,7 @@ u8 should_set_cam_yaw(void) {
     }
 
     // always overwrite cam yaw during gameplay
-    if (((act != ACT_STAR_DANCE_NO_EXIT) && (act != ACT_STAR_DANCE_WATER)) {
+    if ((act != ACT_STAR_DANCE_NO_EXIT) && (act != ACT_STAR_DANCE_WATER)) {
         return TRUE;
     }
 
