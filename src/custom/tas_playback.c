@@ -61,7 +61,7 @@ void load_state(void) {
 }
 
 u8 should_set_cam_yaw(void) {
-    s16 animID, animTimer;
+    s16 animID, animFrame;
     u32 act = gMarioState->action;
 
     // always use normal cam yaw on level exit
@@ -76,9 +76,9 @@ u8 should_set_cam_yaw(void) {
 
     // overwrite cam yaw on last frame of star dance to restore mario's yaw
     animID = gMarioObject->header.gfx.animInfo.animID;
-    animTimer = gMarioObject->header.gfx.animInfo.animFrame;
-    return (((animID == MARIO_ANIM_RETURN_FROM_WATER_STAR_DANCE) && (animTimer == 23))
-            || ((animID == MARIO_ANIM_RETURN_FROM_STAR_DANCE) && (animTimer == 17)));
+    animFrame = gMarioObject->header.gfx.animInfo.animFrame;
+    return (((animID == MARIO_ANIM_RETURN_FROM_WATER_STAR_DANCE) && (animFrame == 23))
+            || ((animID == MARIO_ANIM_RETURN_FROM_STAR_DANCE) && (animFrame == 17)));
 }
 
 void write_inputs(void) {
