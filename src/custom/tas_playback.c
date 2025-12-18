@@ -4,6 +4,7 @@
 #include "game/area.h"
 #include "game/camera.h"
 #include "game/game_init.h"
+#include "game/object_list_processor.h"
 #include "game/print.h"
 #include "sm64.h"
 
@@ -59,6 +60,28 @@ void load_state(void) {
     write_mem_blocks();
 }
 
+u8 should_set_cam_yaw(void) {
+    s16 animID, animTimer;
+    u32 act = gMarioState->action;
+
+    // always use normal cam yaw on level exit
+    if (act == ACT_STAR_DANCE_EXIT) {
+        return FALSE;
+    }
+
+    // always overwrite cam yaw during gameplay
+    if (((act != ACT_STAR_DANCE_NO_EXIT) && (act != ACT_STAR_DANCE_WATER))
+        || (gMarioObject == NULL)) {
+        return TRUE;
+    }
+
+    // overwrite cam yaw on last frame of star dance to restore mario's yaw
+    animID = gMarioObject->header.gfx.animInfo.animID;
+    animTimer = gMarioObject->header.gfx.animInfo.animFrame;
+    return (((animID == MARIO_ANIM_RETURN_FROM_WATER_STAR_DANCE) && (animTimer == 23))
+            || ((animID == MARIO_ANIM_RETURN_FROM_STAR_DANCE) && (animTimer == 17)));
+}
+
 void write_inputs(void) {
     struct RecordingFrame curInputs = sCurRec.inputs[sFrame];
     u16 button = curInputs.button;
@@ -79,7 +102,7 @@ void write_inputs(void) {
     gControllerPads[0].stick_x = curInputs.stickX;
     gControllerPads[0].stick_y = curInputs.stickY;
 
-    if (gCurrentArea != NULL) {
+    if (should_set_cam_yaw() && (gCurrentArea != NULL)) {
         struct Camera *areaCam = gCurrentArea->camera;
         if (areaCam != NULL) {
             areaCam->yaw = curInputs.camYaw;
